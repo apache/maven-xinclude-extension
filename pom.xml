@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.maven.extensions</groupId>
+    <artifactId>maven-extensions</artifactId>
+    <version>42</version>
+    <relativePath />
+  </parent>
+
+  <artifactId>maven-xinclude-extension</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <name>XInclude extension for Maven 4</name>
+  <description>Provides XInclude and external entities support</description>
+
+  <properties>
+    <javaVersion>17</javaVersion>
+    <maven.version>4.0.0-beta-4-SNAPSHOT</maven.version>
+    <junit.version>5.10.3</junit.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.fasterxml.woodstox</groupId>
+      <artifactId>woodstox-core</artifactId>
+      <version>7.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-api-core</artifactId>
+      <version>${maven.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-api-di</artifactId>
+      <version>${maven.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-api-impl</artifactId>
+      <version>${maven.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.7.1</version>
+        <executions>
+          <execution>
+            <id>copy-mdo</id>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <outputDirectory>${project.build.directory}/mdo</outputDirectory>
+              <artifact>org.apache.maven:maven-api-model:${maven.version}:mdo</artifact>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.modello</groupId>
+        <artifactId>modello-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>model-v4</id>
+            <goals>
+              <goal>velocity</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <version>4.1.0</version>
+              <basedir>${project.build.directory}/mdo</basedir>
+              <velocityBasedir>${project.basedir}/src/main/mdo</velocityBasedir>
+              <models>
+                <model>maven-api-model-${maven.version}.mdo</model>
+              </models>
+              <templates>
+                <template>reader-stax.vm</template>
+              </templates>
+              <params>
+                <param>forcedIOModelVersion=4.0.0</param>
+                <param>packageModelV4=org.apache.maven.api.model</param>
+                <param>packageToolV4=org.apache.maven.xinclude</param>
+                <param>isMavenModel=true</param>
+                <param>minimalVersion=4.0.0</param>
+              </params>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-invoker-plugin</artifactId>
+              <version>3.7.0</version>
+              <configuration>
+                <debug>true</debug>
+                <showErrors>true</showErrors>
+                <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                <cloneClean>true</cloneClean>
+                <!--                <pomIncludes>-->
+                <!--                  <pomInclude>*/pom.xml</pomInclude>-->
+                <!--                  <pomInclude>*/non-default-pom.xml</pomInclude>-->
+                <!--                </pomIncludes>-->
+                <!--                <preBuildHookScript>setup</preBuildHookScript>-->
+                <!--                <postBuildHookScript>verify</postBuildHookScript>-->
+                <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+                <!--                <settingsFile>src/it/settings.xml</settingsFile>-->
+                <!--                <scriptVariables>-->
+                <!--                  <remoteRepo>${project.build.directory}/remote-repo</remoteRepo>-->
+                <!--                </scriptVariables>-->
+                <!--                <filterProperties>-->
+                <!--                  <remoteRepo>${project.build.directory}/remote-repo</remoteRepo>-->
+                <!--                </filterProperties>-->
+                <pom>src/it/entities-xinclude/pom.xml</pom>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
+
+</project>
