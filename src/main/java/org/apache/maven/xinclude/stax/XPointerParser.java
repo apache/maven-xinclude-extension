@@ -329,6 +329,7 @@ final class XPointerParser {
         /**
          * Scans the XPointer Expression
          */
+        @SuppressWarnings("checkstyle:MethodLength")
         private static boolean scanExpr(Tokens tokens, String data, int currentOffset, int endOffset)
                 throws InvalidXPointerException {
             int ch;

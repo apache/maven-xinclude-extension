@@ -46,7 +46,7 @@ import org.codehaus.stax2.io.Stax2FileSource;
 
 import static org.apache.maven.internal.impl.StaxLocation.getLocation;
 import static org.apache.maven.internal.impl.StaxLocation.getMessage;
-import static org.apache.maven.xinclude.Utils.*;
+import static org.apache.maven.xinclude.Utils.nonNull;
 
 @Named
 @Singleton
