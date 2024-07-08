@@ -85,6 +85,7 @@ under the License.
             <configuration>
               <outputDirectory>${project.build.directory}/mdo</outputDirectory>
               <artifact>org.apache.maven:maven-api-model:${maven.version}:mdo</artifact>
+              <stripVersion>true</stripVersion>
             </configuration>
           </execution>
         </executions>
@@ -104,7 +105,7 @@ under the License.
               <basedir>${project.build.directory}/mdo</basedir>
               <velocityBasedir>${project.basedir}/src/main/mdo</velocityBasedir>
               <models>
-                <model>maven-api-model-${maven.version}.mdo</model>
+                <model>maven-api-model.mdo</model>
               </models>
               <templates>
                 <template>reader-stax.vm</template>
