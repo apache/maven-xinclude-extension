@@ -153,7 +153,7 @@ under the License.
                 <!--                <filterProperties>-->
                 <!--                  <remoteRepo>${project.build.directory}/remote-repo</remoteRepo>-->
                 <!--                </filterProperties>-->
-                <pom>src/it/entities-xinclude/pom.xml</pom>
+                <pom>src/it/entities-xinclude</pom>
               </configuration>
             </plugin>
           </plugins>
