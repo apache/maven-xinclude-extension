@@ -137,6 +137,7 @@ class XIncludeStreamReader extends StreamReaderDelegate {
         return event;
     }
 
+    @SuppressWarnings({"checkstyle:MethodLength", "checkstyle:UnusedLocalVariable"})
     private void processInclude() throws XMLStreamException {
 
         Location startLocation = this.getLocation();
