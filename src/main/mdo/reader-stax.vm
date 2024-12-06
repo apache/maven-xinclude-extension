@@ -84,6 +84,7 @@ import javax.xml.transform.stream.StreamSource;
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 import static javax.xml.XMLConstants.XML_NS_URI;
 
+@SuppressWarnings("deprecation")
 @Generated
 public class ${className} {
 
