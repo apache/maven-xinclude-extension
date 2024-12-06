@@ -59,8 +59,7 @@ class ModelXmlTest {
                 + "  <version>1.0-m7-SNAPSHOT</version>\n"
                 + "  &desc;\n"
                 + "</project>\n";
-        MavenStaxReader staxReader = new MavenStaxReader();
-        staxReader.setXmlResolver((publicID, systemID, baseURI, namespace) -> {
+        MavenStaxReader staxReader = new MavenStaxReader((publicID, systemID, baseURI, namespace) -> {
             if ("file:desc.xml".equals(systemID)) {
                 return "<?xml version='1.0' encoding='UTF-8'?><description>foo</description>";
             }
