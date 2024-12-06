@@ -137,6 +137,10 @@ under the License.
               <configuration>
                 <showErrors>true</showErrors>
                 <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
+                <collectedProjects>
+                  <project>entities-xinclude/pom.xml</project>
+                  <project>entities-xinclude/child/pom.xml</project>
+                </collectedProjects>
                 <cloneClean>true</cloneClean>
                 <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
                 <settingsFile>src/it/settings.xml</settingsFile>
