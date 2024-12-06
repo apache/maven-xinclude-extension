@@ -57,8 +57,14 @@ under the License.
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
+      <artifactId>maven-xml</artifactId>
+      <version>${maven.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
       <artifactId>maven-impl</artifactId>
       <version>${maven.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -71,6 +77,28 @@ under the License.
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <!-- Use the latest version of the plugin -->
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>[4.0.0-beta-5,)</version>
+                  <!-- Specify the required Maven version -->
+                  <message>You need Maven 4.0.0-beta-5 or higher to build this project.</message>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -109,6 +137,7 @@ under the License.
               </models>
               <templates>
                 <template>reader-stax.vm</template>
+                <template>writer-stax.vm</template>
               </templates>
               <params>
                 <param>forcedIOModelVersion=4.0.0</param>
