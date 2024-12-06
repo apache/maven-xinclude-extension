@@ -34,15 +34,13 @@ under the License.
   <properties>
     <javaVersion>17</javaVersion>
     <maven.version>4.0.0-rc-1</maven.version>
-    <junit.version>5.11.3</junit.version>
+
+    <versions.junit5>5.11.3</versions.junit5>
+    <version.maven-dependency-plugin>3.8.1</version.maven-dependency-plugin>
+    <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>com.fasterxml.woodstox</groupId>
-      <artifactId>woodstox-core</artifactId>
-      <version>7.1.0</version>
-    </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-api-core</artifactId>
@@ -54,6 +52,35 @@ under the License.
       <artifactId>maven-api-di</artifactId>
       <version>${maven.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-api-xml</artifactId>
+      <version>${maven.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-api-model</artifactId>
+      <version>${maven.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-api-meta</artifactId>
+      <version>${maven.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.woodstox</groupId>
+      <artifactId>woodstox-core</artifactId>
+      <version>7.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.woodstox</groupId>
+      <artifactId>stax2-api</artifactId>
+      <version>4.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -69,8 +96,7 @@ under the License.
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.version}</version>
+      <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
