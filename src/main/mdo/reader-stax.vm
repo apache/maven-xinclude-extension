@@ -84,6 +84,7 @@ import javax.xml.transform.stream.StreamSource;
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 import static javax.xml.XMLConstants.XML_NS_URI;
 
+@SuppressWarnings("deprecation")
 @Generated
 public class ${className} {
 
@@ -356,15 +357,39 @@ public class ${className} {
     private boolean addLocationInformation = true;
 #end
 
-    private ContentTransformer contentTransformer = (s, f) -> s;
-
-    private XMLResolver xmlResolver;
+    private final ContentTransformer contentTransformer;
+    private final XMLResolver xmlResolver;
 
     public ${className}() {
+        this(null, null);
     }
 
     public ${className}(ContentTransformer contentTransformer) {
+        this(contentTransformer, null);
+    }
+
+    public ${className}(XMLResolver xmlResolver) {
+        this(null, xmlResolver);
+    }
+
+    public ${className}(ContentTransformer contentTransformer, XMLResolver xmlResolver) {
         this.contentTransformer = contentTransformer;
+        this.xmlResolver = xmlResolver;
+    }
+
+    /**
+     * Returns the {@link XMLInputFactory} used by this reader.
+     *
+     * @return the {@link XMLInputFactory} used by this reader.
+     */
+    public XMLInputFactory getXMLInputFactory(boolean strict) {
+        XMLInputFactory factory = new com.ctc.wstx.stax.WstxInputFactory();
+        factory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, true);
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, true);
+        factory.setProperty(WstxInputProperties.P_TREAT_CHAR_REFS_AS_ENTS, false);
+        factory.setProperty(WstxInputProperties.P_ENTITY_RESOLVER, xmlResolver);
+        factory.setProperty(WstxInputProperties.P_UNDECLARED_ENTITY_RESOLVER, getUndeclaredXmlResolver(strict));
+        return factory;
     }
 
     /**
@@ -405,22 +430,6 @@ public class ${className} {
     } //-- void setAddLocationInformation(boolean)
 #end
 
-    public ContentTransformer getContentTransformer() {
-        return contentTransformer;
-    }
-
-    public void setContentTransformer(ContentTransformer contentTransformer) {
-        this.contentTransformer = contentTransformer;
-    }
-
-    public XMLResolver getXmlResolver() {
-        return xmlResolver;
-    }
-
-    public void setXmlResolver(XMLResolver xmlResolver) {
-        this.xmlResolver = xmlResolver;
-    }
-
     public ${root.name} read(Reader reader) throws XMLStreamException {
 #if ( $locationTracking )
         return read(reader, true, null);
@@ -441,17 +450,12 @@ public class ${className} {
 #else
     public ${root.name} read(Reader reader, boolean strict) throws XMLStreamException {
 #end
-        XMLInputFactory factory = new com.ctc.wstx.stax.WstxInputFactory();
-        factory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, true);
-        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, true);
-        factory.setProperty(WstxInputProperties.P_TREAT_CHAR_REFS_AS_ENTS, false);
-        factory.setProperty(WstxInputProperties.P_ENTITY_RESOLVER, xmlResolver);
-        factory.setProperty(WstxInputProperties.P_UNDECLARED_ENTITY_RESOLVER, getUndeclaredXmlResolver(strict));
 #if ( $locationTracking )
         StreamSource streamSource = new StreamSource(reader, source != null ? source.getLocation() : null);
 #else
         StreamSource streamSource = new StreamSource(reader);
 #end
+        XMLInputFactory factory = getXMLInputFactory(strict);
         XMLStreamReader parser = factory.createXMLStreamReader(streamSource);
 #if ( $locationTracking )
         return read(parser, strict, source);
@@ -482,17 +486,12 @@ public class ${className} {
 #else
     public ${root.name} read(InputStream in, boolean strict) throws XMLStreamException {
 #end
-        XMLInputFactory factory = new com.ctc.wstx.stax.WstxInputFactory();
-        factory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, true);
-        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, true);
-        factory.setProperty(WstxInputProperties.P_TREAT_CHAR_REFS_AS_ENTS, false);
-        factory.setProperty(WstxInputProperties.P_ENTITY_RESOLVER, xmlResolver);
-        factory.setProperty(WstxInputProperties.P_UNDECLARED_ENTITY_RESOLVER, getUndeclaredXmlResolver(strict));
 #if ( $locationTracking )
         StreamSource streamSource = new StreamSource(in, source != null ? source.getLocation() : null);
 #else
         StreamSource streamSource = new StreamSource(in);
 #end
+        XMLInputFactory factory = getXMLInputFactory(strict);
         XMLStreamReader parser = factory.createXMLStreamReader(streamSource);
 #if ( $locationTracking )
         return read(parser, strict, source);
@@ -579,6 +578,9 @@ public class ${className} {
   #foreach ( $field in $allFields )
     #if ( $Helper.xmlFieldMetadata( $field ).attribute )
       #set ( $fieldTagName = $Helper.xmlFieldMetadata( $field ).tagName )
+      #if ( ! $fieldTagName )
+        #set ( $fieldTagName = $field.name )
+      #end
       #set ( $fieldCapName = $Helper.capitalise( $field.name ) )
             } else if ("$fieldTagName".equals(name)) {
       #if ( $locationTracking )
@@ -590,6 +592,8 @@ public class ${className} {
                 ${classLcapName}.${field.name}(interpolatedTrimmed(value, "$fieldTagName"));
       #elseif ( $field.type == "boolean" || $field.type == "Boolean" )
                 ${classLcapName}.${field.name}(getBooleanValue(interpolatedTrimmed(value, "$fieldTagName"), "$fieldTagName", parser, ${field.defaultValue}));
+      #elseif ( $field.type == "int" || $field.type == "Integer" )
+                ${classLcapName}.${field.name}(getIntegerValue(interpolatedTrimmed(value, "$fieldTagName"), "$fieldTagName", parser, strict, ${field.defaultValue}));
       #else
                 // TODO: type=${field.type} to=${field.to} multiplicity=${field.multiplicity}
       #end
@@ -690,7 +694,13 @@ public class ${className} {
         #end
                     break;
       #elseif ( $field.to && $field.multiplicity == "*" && $Helper.isFlatItems( $field ) )
+        #if ( $locationTracking )
+                    ${field.name}.add(parse${field.toClass.name}(parser, strict, source));
+        #elseif ( $needXmlContext )
+                    ${field.name}.add(parse${field.toClass.name}(parser, strict, context));
+        #else
                     ${field.name}.add(parse${field.toClass.name}(parser, strict));
+        #end
                     break;
       #elseif ( $field.to && $field.multiplicity == "*" )
                     List<$field.to> ${field.name} = new ArrayList<>();
@@ -869,7 +879,7 @@ public class ${className} {
      * @return String
      */
     private String interpolatedTrimmed(String value, String context) {
-        return getTrimmedValue(contentTransformer.transform(value, context));
+        return getTrimmedValue(contentTransformer != null ? contentTransformer.transform(value, context) : value);
     } //-- String interpolatedTrimmed(String, String)
 
     /**

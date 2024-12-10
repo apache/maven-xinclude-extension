@@ -40,12 +40,11 @@ import org.apache.maven.api.services.xml.XmlReaderException;
 import org.apache.maven.api.services.xml.XmlReaderRequest;
 import org.apache.maven.api.services.xml.XmlWriterException;
 import org.apache.maven.api.services.xml.XmlWriterRequest;
-import org.apache.maven.model.v4.MavenStaxWriter;
 import org.apache.maven.xinclude.stax.XInclude;
 import org.codehaus.stax2.io.Stax2FileSource;
 
-import static org.apache.maven.internal.impl.StaxLocation.getLocation;
-import static org.apache.maven.internal.impl.StaxLocation.getMessage;
+import static org.apache.maven.xinclude.StaxLocation.getLocation;
+import static org.apache.maven.xinclude.StaxLocation.getMessage;
 import static org.apache.maven.xinclude.Utils.nonNull;
 
 @Named
