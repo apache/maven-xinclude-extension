@@ -72,6 +72,31 @@ class XIncludeTest {
     }
 
     @Test
+    void testInclusionWithNamespaces() throws Exception {
+        String input = "<?xml version='1.0'?>\n" + "<document xmlns='http://example.org' xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
+                + "  <p>120 Mz is adequate for an average home user.</p>\n"
+                + "  <xi:include href=\"disclaimer.xml\"/>\n"
+                + "</document>";
+        Map<String, String> includes = Collections.singletonMap(
+                "http://www.example.com/disclaimer.xml",
+                "<?xml version='1.0'?>\n" + "<disclaimer>\n"
+                        + "  <p>The opinions represented herein represent those of the individual\n"
+                        + "  and should not be interpreted as official policy endorsed by this\n"
+                        + "  organization.</p>\n"
+                        + "</disclaimer>");
+        String expected = "<?xml version='1.0'?>\n" + "<document xmlns=\"http://example.org\" xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
+                + "  <p>120 Mz is adequate for an average home user.</p>\n"
+                + "  <disclaimer xmlns=\"\" xml:base=\"http://www.example.com/disclaimer.xml\">\n"
+                + "  <p>The opinions represented herein represent those of the individual\n"
+                + "  and should not be interpreted as official policy endorsed by this\n"
+                + "  organization.</p>\n"
+                + "</disclaimer>\n"
+                + "</document>";
+
+        assertXInclude(input, includes, expected);
+    }
+
+    @Test
     void testTextualInclusion() throws Exception {
         String input = "<?xml version='1.0'?>\n" + "<document xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
                 + "  <p>This document has been accessed\n"
