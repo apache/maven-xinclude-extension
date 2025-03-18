@@ -72,8 +72,9 @@ class XIncludeTest {
     }
 
     @Test
-    void testInclusionWithNamespaces() throws Exception {
-        String input = "<?xml version='1.0'?>\n" + "<document xmlns='http://example.org' xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
+    void testInclusionWithEmptyNamespaces() throws Exception {
+        String input = "<?xml version='1.0'?>\n"
+                + "<document xmlns='http://example.org' xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
                 + "  <p>120 Mz is adequate for an average home user.</p>\n"
                 + "  <xi:include href=\"disclaimer.xml\"/>\n"
                 + "</document>";
@@ -84,7 +85,8 @@ class XIncludeTest {
                         + "  and should not be interpreted as official policy endorsed by this\n"
                         + "  organization.</p>\n"
                         + "</disclaimer>");
-        String expected = "<?xml version='1.0'?>\n" + "<document xmlns=\"http://example.org\" xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
+        String expected = "<?xml version='1.0'?>\n"
+                + "<document xmlns=\"http://example.org\" xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
                 + "  <p>120 Mz is adequate for an average home user.</p>\n"
                 + "  <disclaimer xmlns=\"\" xml:base=\"http://www.example.com/disclaimer.xml\">\n"
                 + "  <p>The opinions represented herein represent those of the individual\n"
@@ -92,6 +94,36 @@ class XIncludeTest {
                 + "  organization.</p>\n"
                 + "</disclaimer>\n"
                 + "</document>";
+
+        assertXInclude(input, includes, expected);
+    }
+
+    @Test
+    void testInclusionWithDifferentNamespaces() throws Exception {
+        String input = "<?xml version='1.0'?>\n"
+                + "<doc:document xmlns:doc=\"http://example.org/doc\" xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
+                + "  <doc:p>120 Mz is adequate for an average home user.</doc:p>\n"
+                + "  <xi:include href=\"disclaimer.xml\" xpointer=\"element(/1/1)\"/>\n"
+                + "</doc:document>";
+        Map<String, String> includes = Collections.singletonMap(
+                "http://www.example.com/disclaimer.xml",
+                "<?xml version='1.0'?>\n"
+                        + "<wrapper xmlns:doc=\"http://example.org/disclaimer\">\n"
+                        + "  <doc:disclaimer>\n"
+                        + "    <doc:p>The opinions represented herein represent those of the individual\n"
+                        + "    and should not be interpreted as official policy endorsed by this\n"
+                        + "    organization.</doc:p>\n"
+                        + "  </doc:disclaimer>\n"
+                        + "</wrapper>");
+        String expected = "<?xml version='1.0'?>\n"
+                + "<doc:document xmlns:doc=\"http://example.org/doc\" xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
+                + "  <doc:p>120 Mz is adequate for an average home user.</doc:p>\n"
+                + "  <doc:disclaimer xmlns:doc=\"http://example.org/disclaimer\" xml:base=\"http://www.example.com/disclaimer.xml\">\n"
+                + "    <doc:p>The opinions represented herein represent those of the individual\n"
+                + "    and should not be interpreted as official policy endorsed by this\n"
+                + "    organization.</doc:p>\n"
+                + "  </doc:disclaimer>\n"
+                + "</doc:document>";
 
         assertXInclude(input, includes, expected);
     }

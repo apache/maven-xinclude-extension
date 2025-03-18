@@ -18,6 +18,8 @@
  */
 package org.apache.maven.xinclude.stax;
 
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.Location;
@@ -48,6 +50,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -270,6 +274,22 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                     }
                     resNode.setAttributeNS(XML_NS_URI, "xml:base", input.getSystemId());
 
+                    NamespaceContext context =
+                            this.contextStack.peek().getReader().getNamespaceContext();
+                    Map<String, String> namespaces = getAllNamespaces(resNode.getParentNode());
+                    for (Map.Entry<String, String> entry : namespaces.entrySet()) {
+                        String prefix = entry.getKey();
+                        String uri = entry.getValue();
+                        if (context != null
+                                && context.getNamespaceURI(prefix) != null
+                                && !uri.equals(context.getNamespaceURI(prefix))) {
+                            resNode.setAttributeNS(
+                                    XMLConstants.XMLNS_ATTRIBUTE_NS_URI,
+                                    prefix.isEmpty() ? "xmlns" : "xmlns:" + prefix,
+                                    uri);
+                        }
+                    }
+
                     NamedNodeMap attrs = node.getAttributes();
                     for (int i = 0; i < attrs.getLength(); i++) {
                         Attr att = (Attr) attrs.item(i);
@@ -444,6 +464,39 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                 }
             }
         }
+    }
+
+    private Map<String, String> getAllNamespaces(Node element) {
+        Map<String, String> namespaces = new LinkedHashMap<>();
+        // Walk up the tree to collect all inherited namespaces
+        Node current = element;
+        while (current instanceof Element elem) {
+            NamedNodeMap attributes = elem.getAttributes();
+            // Check all attributes for namespace declarations
+            for (int i = 0; i < attributes.getLength(); i++) {
+                Attr attr = (Attr) attributes.item(i);
+                String name = attr.getNodeName();
+                // Handle xmlns:prefix declarations
+                if (name.startsWith("xmlns:")) {
+                    String prefix = name.substring(6); // length of "xmlns:"
+                    if (!namespaces.containsKey(prefix)) {
+                        namespaces.put(prefix, attr.getValue());
+                    }
+                }
+                // Handle default namespace declaration
+                else if ("xmlns".equals(name)) {
+                    if (!namespaces.containsKey("")) {
+                        namespaces.put("", attr.getValue());
+                    }
+                }
+            }
+            current = current.getParentNode();
+        }
+        // Add empty namespace
+        if (!namespaces.containsKey("")) {
+            namespaces.put("", "");
+        }
+        return namespaces;
     }
 
     private String getAttribute(Element node, String attr) {
