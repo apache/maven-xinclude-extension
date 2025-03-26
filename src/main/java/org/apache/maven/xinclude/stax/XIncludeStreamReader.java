@@ -62,6 +62,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import static javax.xml.XMLConstants.XML_NS_PREFIX;
 import static javax.xml.XMLConstants.XML_NS_URI;
 
 /**
@@ -70,9 +71,19 @@ import static javax.xml.XMLConstants.XML_NS_URI;
 @SuppressWarnings("checkstyle:MissingSwitchDefault")
 class XIncludeStreamReader extends StreamReaderDelegate {
 
-    private static final String XINCLUDE_NAMESPACE = "http://www.w3.org/2001/XInclude";
-    private static final String XINCLUDE_INCLUDE = "include";
-    private static final String XINCLUDE_FALLBACK = "fallback";
+    public static final String XINCLUDE_NAMESPACE = "http://www.w3.org/2001/XInclude";
+    public static final String XINCLUDE_INCLUDE_ELEMENT = "include";
+    public static final String XINCLUDE_FALLBACK_ELEMENT = "fallback";
+    public static final String XINCLUDE_LOCAL_ATTRIBUTES = "http://www.w3.org/2001/XInclude/local-attributes";
+    public static final String XINCLUDE_HREF_ATTRIBUTE = "href";
+    public static final String XINCLUDE_PARSE_ATTRIBUTE = "parse";
+    public static final String XINCLUDE_XPOINTER_ATTRIBUTE = "xpointer";
+    public static final String XINCLUDE_FRAGID_ATTRIBUTE = "fragid";
+    public static final String XINCLUDE_SET_XML_ID_ATTRIBUTE = "set-xml-id";
+    public static final String XINCLUDE_ENCODING_ATTRIBUTE = "encoding";
+    public static final String XML_LANG_ATTRIBUTE = "lang";
+    public static final String XML_BASE_ATTRIBUTE = "base";
+    public static final String XML_ID_ATTRIBUTE = "id";
 
     private final XMLInputFactory factory;
     private final XMLOutputFactory outputFactory;
@@ -102,10 +113,10 @@ class XIncludeStreamReader extends StreamReaderDelegate {
             for (int i = 0; i < getAttributeCount(); i++) {
                 if ("xml".equals(getAttributePrefix(i))) {
                     switch (getAttributeLocalName(i)) {
-                        case "lang":
+                        case XML_LANG_ATTRIBUTE:
                             xmlLang = getAttributeValue(i);
                             break;
-                        case "base":
+                        case XML_BASE_ATTRIBUTE:
                             xmlBase = getAttributeValue(i);
                             break;
                     }
@@ -115,7 +126,7 @@ class XIncludeStreamReader extends StreamReaderDelegate {
             this.xmlBases.push(xmlBase != null ? xmlBase : "");
             String namespace = getNamespaceURI();
             String localName = getLocalName();
-            if (XINCLUDE_NAMESPACE.equals(namespace) && XINCLUDE_INCLUDE.equals(localName)) {
+            if (XINCLUDE_NAMESPACE.equals(namespace) && XINCLUDE_INCLUDE_ELEMENT.equals(localName)) {
                 processInclude();
                 return next();
             }
@@ -155,28 +166,30 @@ class XIncludeStreamReader extends StreamReaderDelegate {
             throw new RuntimeException(e);
         }
 
-        String href = getAttribute(node, "href");
-        String parse = getAttribute(node, "parse");
-        String xpointer = getAttribute(node, "xpointer");
-        String fragid = getAttribute(node, "fragid");
-        String setXmlId = getAttribute(node, "set-xml-id");
-        String encoding = getAttribute(node, "encoding");
+        String href = getAttribute(node, XINCLUDE_HREF_ATTRIBUTE);
+        String parse = getAttribute(node, XINCLUDE_PARSE_ATTRIBUTE);
+        String xpointer = getAttribute(node, XINCLUDE_XPOINTER_ATTRIBUTE);
+        String fragid = getAttribute(node, XINCLUDE_FRAGID_ATTRIBUTE);
+        String setXmlId = getAttribute(node, XINCLUDE_SET_XML_ID_ATTRIBUTE);
+        String encoding = getAttribute(node, XINCLUDE_ENCODING_ATTRIBUTE);
 
         IOException resourceError = null;
 
         if (href == null) {
             if (xpointer == null && fragid == null) {
-                throw new XMLStreamException("xpointer or fragid must be used as href is null");
+                throw new XMLStreamException(XINCLUDE_XPOINTER_ATTRIBUTE + " or " + XINCLUDE_FRAGID_ATTRIBUTE
+                        + " must be used as " + XINCLUDE_HREF_ATTRIBUTE + " is null");
             }
             href = "";
         } else if (href.contains("#")) {
-            throw new XMLStreamException("fragment identifiers must not be used in href: " + href);
+            throw new XMLStreamException(
+                    "fragment identifiers must not be used in " + XINCLUDE_HREF_ATTRIBUTE + ": " + href);
         }
         URI hrefUri;
         try {
             hrefUri = new URI(href);
         } catch (URISyntaxException e) {
-            throw new XMLStreamException("invalid syntax for href: " + href, e);
+            throw new XMLStreamException("invalid syntax for " + XINCLUDE_HREF_ATTRIBUTE + ": " + href, e);
         }
 
         Source input;
@@ -207,7 +220,7 @@ class XIncludeStreamReader extends StreamReaderDelegate {
             } else if ("text".equals(parse) || parse.startsWith("text/")) {
                 isText = true;
                 if (xpointer != null) {
-                    throw new XMLStreamException("xpointer cannot be used with text parsing");
+                    throw new XMLStreamException(XINCLUDE_XPOINTER_ATTRIBUTE + " cannot be used with text parsing");
                 }
             } else {
                 resourceError = new IOException("Unsupported media type: " + parse);
@@ -257,7 +270,7 @@ class XIncludeStreamReader extends StreamReaderDelegate {
 
                     Element p = resNode;
                     while (p != null) {
-                        Attr attr = p.getAttributeNodeNS(XML_NS_URI, "lang");
+                        Attr attr = p.getAttributeNodeNS(XML_NS_URI, XML_LANG_ATTRIBUTE);
                         if (attr != null) {
                             impLang = attr.getValue();
                             break;
@@ -266,16 +279,16 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                         p = np instanceof Element ? (Element) np : null;
                     }
                     if (!Objects.equals(curLang, impLang)) {
-                        resNode.setAttributeNS(XML_NS_URI, "xml:lang", impLang);
+                        resNode.setAttributeNS(XML_NS_URI, XML_NS_PREFIX + ":" + XML_LANG_ATTRIBUTE, impLang);
                     }
-                    resNode.setAttributeNS(XML_NS_URI, "xml:base", input.getSystemId());
+                    resNode.setAttributeNS(XML_NS_URI, XML_NS_PREFIX + ":" + XML_BASE_ATTRIBUTE, input.getSystemId());
 
                     NamedNodeMap attrs = node.getAttributes();
                     for (int i = 0; i < attrs.getLength(); i++) {
                         Attr att = (Attr) attrs.item(i);
                         String ns = att.getNamespaceURI();
                         if (ns != null && !XML_NS_URI.equals(ns)) {
-                            if ("http://www.w3.org/2001/XInclude/local-attributes".equals(ns)) {
+                            if (XINCLUDE_LOCAL_ATTRIBUTES.equals(ns)) {
                                 resNode.setAttribute(att.getLocalName(), att.getValue());
                             } else {
                                 resNode.setAttributeNS(ns, att.getPrefix() + ":" + att.getLocalName(), att.getValue());
@@ -283,7 +296,7 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                         }
                     }
                     if (setXmlId != null) {
-                        resNode.setAttributeNS(XML_NS_URI, "xml:id", setXmlId);
+                        resNode.setAttributeNS(XML_NS_URI, XML_NS_PREFIX + ":" + XML_ID_ATTRIBUTE, setXmlId);
                     }
 
                     XMLStreamReader sr = factory.createXMLStreamReader(new DOMSource(resNode));
@@ -354,7 +367,8 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                         BufferedReader br = new BufferedReader(new StringReader(sw.toString()));
                         include = br.lines().skip(min).limit(max - min).collect(Collectors.joining("\n", "", "\n"));
                     } else {
-                        throw new XMLStreamException("Unsupported text scheme in fragid: " + fragid);
+                        throw new XMLStreamException(
+                                "Unsupported text scheme in " + XINCLUDE_FRAGID_ATTRIBUTE + ": " + fragid);
                     }
                     if (!integrity.isEmpty()) {
                         String charset = null;
@@ -367,7 +381,8 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                             } else if (integrity.startsWith("md5=")) {
                                 // TODO: implement
                             } else {
-                                throw new XMLStreamException("Unsupported text integrity in fragid: " + fragid);
+                                throw new XMLStreamException(
+                                        "Unsupported text integrity in " + XINCLUDE_FRAGID_ATTRIBUTE + ": " + fragid);
                             }
                         }
                     }
@@ -424,9 +439,10 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                 continue;
             }
             if (XINCLUDE_NAMESPACE.equals(child.getNamespaceURI())) {
-                if (XINCLUDE_FALLBACK.equals(child.getLocalName())) {
+                if (XINCLUDE_FALLBACK_ELEMENT.equals(child.getLocalName())) {
                     if (hasFallback) {
-                        throw new XMLStreamException("One one xi:fallback element can be present", startLocation);
+                        throw new XMLStreamException(
+                                "One one xi:" + XINCLUDE_FALLBACK_ELEMENT + " element can be present", startLocation);
                     }
                     hasFallback = true;
                     if (fallback) {
