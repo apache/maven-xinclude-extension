@@ -18,6 +18,7 @@
  */
 package org.apache.maven.xinclude.stax;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -65,11 +66,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import static javax.xml.XMLConstants.DEFAULT_NS_PREFIX;
-import static javax.xml.XMLConstants.NULL_NS_URI;
-import static javax.xml.XMLConstants.XMLNS_ATTRIBUTE;
-import static javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
-import static javax.xml.XMLConstants.XML_NS_PREFIX;
 import static javax.xml.XMLConstants.XML_NS_URI;
 
 /**
@@ -78,7 +74,6 @@ import static javax.xml.XMLConstants.XML_NS_URI;
 @SuppressWarnings("checkstyle:MissingSwitchDefault")
 class XIncludeStreamReader extends StreamReaderDelegate {
 
-    private static final String XMLNS_NS_PREFIX = "xmlns";
     private static final String XINCLUDE_NAMESPACE = "http://www.w3.org/2001/XInclude";
     private static final String XINCLUDE_INCLUDE = "include";
     private static final String XINCLUDE_FALLBACK = "fallback";
@@ -275,9 +270,9 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                         p = np instanceof Element ? (Element) np : null;
                     }
                     if (!Objects.equals(curLang, impLang)) {
-                        resNode.setAttributeNS(XML_NS_URI, XML_NS_PREFIX + ":lang", impLang);
+                        resNode.setAttributeNS(XML_NS_URI, "xml:lang", impLang);
                     }
-                    resNode.setAttributeNS(XML_NS_URI, XML_NS_PREFIX + ":base", input.getSystemId());
+                    resNode.setAttributeNS(XML_NS_URI, "xml:base", input.getSystemId());
 
                     NamespaceContext context =
                             this.contextStack.peek().getReader().getNamespaceContext();
@@ -289,8 +284,8 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                                 && context.getNamespaceURI(prefix) != null
                                 && !uri.equals(context.getNamespaceURI(prefix))) {
                             resNode.setAttributeNS(
-                                    XMLNS_ATTRIBUTE_NS_URI,
-                                    prefix.isEmpty() ? XMLNS_ATTRIBUTE : XMLNS_NS_PREFIX + ":" + prefix,
+                                    XMLConstants.XMLNS_ATTRIBUTE_NS_URI,
+                                    prefix.isEmpty() ? "xmlns" : "xmlns:" + prefix,
                                     uri);
                         }
                     }
@@ -308,7 +303,7 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                         }
                     }
                     if (setXmlId != null) {
-                        resNode.setAttributeNS(XML_NS_URI, XML_NS_PREFIX + ":id", setXmlId);
+                        resNode.setAttributeNS(XML_NS_URI, "xml:id", setXmlId);
                     }
 
                     XMLStreamReader sr = factory.createXMLStreamReader(new DOMSource(resNode));
@@ -482,24 +477,24 @@ class XIncludeStreamReader extends StreamReaderDelegate {
                 Attr attr = (Attr) attributes.item(i);
                 String name = attr.getNodeName();
                 // Handle xmlns:prefix declarations
-                if (XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
-                    String prefix = attr.getLocalName();
+                if (name.startsWith("xmlns:")) {
+                    String prefix = name.substring(6); // length of "xmlns:"
                     if (!namespaces.containsKey(prefix)) {
                         namespaces.put(prefix, attr.getValue());
                     }
                 }
                 // Handle default namespace declaration
-                else if (XMLNS_ATTRIBUTE.equals(name)) {
-                    if (!namespaces.containsKey(DEFAULT_NS_PREFIX)) {
-                        namespaces.put(DEFAULT_NS_PREFIX, attr.getValue());
+                else if ("xmlns".equals(name)) {
+                    if (!namespaces.containsKey("")) {
+                        namespaces.put("", attr.getValue());
                     }
                 }
             }
             current = current.getParentNode();
         }
         // Add empty namespace
-        if (!namespaces.containsKey(DEFAULT_NS_PREFIX)) {
-            namespaces.put(DEFAULT_NS_PREFIX, NULL_NS_URI);
+        if (!namespaces.containsKey("")) {
+            namespaces.put("", "");
         }
         return namespaces;
     }
