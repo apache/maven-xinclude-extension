@@ -33,7 +33,7 @@ under the License.
 
   <properties>
     <javaVersion>17</javaVersion>
-    <maven.version>4.0.0-rc-3</maven.version>
+    <maven.version>4.0.0-rc-4</maven.version>
 
     <versions.junit5>5.12.1</versions.junit5>
     <version.maven-dependency-plugin>3.8.1</version.maven-dependency-plugin>
