@@ -36,7 +36,7 @@ under the License.
     <maven.version>4.0.0-rc-3</maven.version>
 
     <versions.junit5>5.12.1</versions.junit5>
-    <version.maven-dependency-plugin>3.9.0</version.maven-dependency-plugin>
+    <version.maven-dependency-plugin>3.10.0</version.maven-dependency-plugin>
     <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
     <version.maven-invoker-plugin>3.9.1</version.maven-invoker-plugin>
   </properties>
