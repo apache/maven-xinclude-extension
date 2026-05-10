@@ -34,11 +34,6 @@ under the License.
   <properties>
     <javaVersion>17</javaVersion>
     <maven.version>4.0.0-rc-3</maven.version>
-
-    <versions.junit5>5.12.1</versions.junit5>
-    <version.maven-dependency-plugin>3.10.0</version.maven-dependency-plugin>
-    <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
-    <version.maven-invoker-plugin>3.10.1</version.maven-invoker-plugin>
   </properties>
 
   <dependencies>
@@ -129,7 +124,6 @@ under the License.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>${version.maven-dependency-plugin}</version>
         <executions>
           <execution>
             <id>copy-mdo</id>
@@ -189,7 +183,6 @@ under the License.
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-invoker-plugin</artifactId>
-              <version>${version.maven-invoker-plugin}</version>
               <configuration>
                 <showErrors>true</showErrors>
                 <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
