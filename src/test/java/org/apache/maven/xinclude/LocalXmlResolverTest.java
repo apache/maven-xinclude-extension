@@ -34,16 +34,18 @@ public class LocalXmlResolverTest {
 
     @Test
     void testAbsoluteUriWithRelativePath() {
-        XMLStreamException exception =
-                assertThrows(XMLStreamException.class, () -> new LocalXmlResolver(Paths.get("/users/base"))
+        XMLStreamException exception = assertThrows(
+                XMLStreamException.class,
+                () -> new LocalXmlResolver(Paths.get("/users/base"))
                         .resolveEntity(null, "file:foo/bar.xml", "file:/users/base/pom.xml", null));
         assertTrue(exception.getMessage().contains("systemID must be a relative URI"), exception.getMessage());
     }
 
     @Test
     void testAbsoluteUriWithAbsolutePath() {
-        XMLStreamException exception =
-                assertThrows(XMLStreamException.class, () -> new LocalXmlResolver(Paths.get("/users/base"))
+        XMLStreamException exception = assertThrows(
+                XMLStreamException.class,
+                () -> new LocalXmlResolver(Paths.get("/users/base"))
                         .resolveEntity(null, "file:/foo/bar.xml", "file:/users/base/pom.xml", null));
         assertTrue(exception.getMessage().contains("systemID must be a relative URI"), exception.getMessage());
     }
@@ -51,8 +53,9 @@ public class LocalXmlResolverTest {
     @Test
     @DisabledOnOs(OS.WINDOWS)
     void testRelativeUriWithDifferentAbsolutePath() {
-        XMLStreamException exception =
-                assertThrows(XMLStreamException.class, () -> new LocalXmlResolver(Paths.get("/users/base"))
+        XMLStreamException exception = assertThrows(
+                XMLStreamException.class,
+                () -> new LocalXmlResolver(Paths.get("/users/base"))
                         .resolveEntity(null, "/foo/bar.xml", "file:/users/base/pom.xml", null));
         assertTrue(exception.getMessage().contains("systemID must be a relative path"), exception.getMessage());
     }
@@ -60,8 +63,9 @@ public class LocalXmlResolverTest {
     @Test
     void testRelativeUriWithDifferentAbsolutePathWin() {
         // `C:/users` is parsed as a `C` scheme !
-        XMLStreamException exception =
-                assertThrows(XMLStreamException.class, () -> new LocalXmlResolver(Paths.get("/users/base"))
+        XMLStreamException exception = assertThrows(
+                XMLStreamException.class,
+                () -> new LocalXmlResolver(Paths.get("/users/base"))
                         .resolveEntity(null, "C:/foo/bar.xml", "file:/users/base/pom.xml", null));
         assertTrue(exception.getMessage().contains("systemID must be a relative URI"), exception.getMessage());
     }
@@ -69,8 +73,9 @@ public class LocalXmlResolverTest {
     @Test
     @DisabledOnOs(OS.WINDOWS)
     void testRelativeUriWithSameAbsolutePath() {
-        XMLStreamException exception =
-                assertThrows(XMLStreamException.class, () -> new LocalXmlResolver(Paths.get("/users/base"))
+        XMLStreamException exception = assertThrows(
+                XMLStreamException.class,
+                () -> new LocalXmlResolver(Paths.get("/users/base"))
                         .resolveEntity(null, "/users/base/foo/bar.xml", "file:/users/base/pom.xml", null));
         assertTrue(exception.getMessage().contains("systemID must be a relative path"), exception.getMessage());
     }
@@ -78,16 +83,18 @@ public class LocalXmlResolverTest {
     @Test
     void testRelativeUriWithSameAbsolutePathWin() {
         // `C:/users` is parsed as a `C` scheme !
-        XMLStreamException exception =
-                assertThrows(XMLStreamException.class, () -> new LocalXmlResolver(Paths.get("/users/base"))
+        XMLStreamException exception = assertThrows(
+                XMLStreamException.class,
+                () -> new LocalXmlResolver(Paths.get("/users/base"))
                         .resolveEntity(null, "C:/users/base/foo/bar.xml", "file:/users/base/pom.xml", null));
         assertTrue(exception.getMessage().contains("systemID must be a relative URI"), exception.getMessage());
     }
 
     @Test
     void testRelativeUriWithRelativeUriToParentOutsideTree() {
-        XMLStreamException exception =
-                assertThrows(XMLStreamException.class, () -> new LocalXmlResolver(Paths.get("/users/base"))
+        XMLStreamException exception = assertThrows(
+                XMLStreamException.class,
+                () -> new LocalXmlResolver(Paths.get("/users/base"))
                         .resolveEntity(null, "../../bar.xml", "file:/users/base/foo/pom.xml", null));
         assertTrue(
                 exception.getMessage().contains("systemID cannot refer to a path outside rootDirectory"),
@@ -96,8 +103,9 @@ public class LocalXmlResolverTest {
 
     @Test
     void testRelativeUriWithRelativeUriToParentInsideTree() {
-        XMLStreamException exception =
-                assertThrows(XMLStreamException.class, () -> new LocalXmlResolver(Paths.get("/users/base"))
+        XMLStreamException exception = assertThrows(
+                XMLStreamException.class,
+                () -> new LocalXmlResolver(Paths.get("/users/base"))
                         .resolveEntity(null, "../bar.xml", "file:/users/base/foo/pom.xml", null));
         assertTrue(
                 exception.getMessage().contains("Unable to create Source")
@@ -107,8 +115,9 @@ public class LocalXmlResolverTest {
 
     @Test
     void testRelativeUriWithRelativePath() {
-        XMLStreamException exception =
-                assertThrows(XMLStreamException.class, () -> new LocalXmlResolver(Paths.get("/users/base"))
+        XMLStreamException exception = assertThrows(
+                XMLStreamException.class,
+                () -> new LocalXmlResolver(Paths.get("/users/base"))
                         .resolveEntity(null, "foo/bar.xml", "file:/users/base/pom.xml", null));
         assertTrue(
                 exception.getMessage().contains("Unable to create Source")
